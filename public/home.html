@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOME</title>
+     <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; padding: 0 16px; }
+        input, button { display: block; width: 100%; padding: 8px; margin: 6px 0; box-sizing: border-box; }
+        #lobby { display: none; }
+    </style>
+</head>
+<body>
+    <div id = "joinForm">
+        <input type="text" id="name" placeholder="NAME">
+        <input type="text" id="skills" placeholder="Skills to learn">
+        <input type="text" id="knowSkill" placeholder="Known Skills">
+        <button id="join">JOIN</button>
+    </div>
+    <div id="lobby">
+        <h2>People Online</h2>
+        <ul id="userList"></ul>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const join = document.getElementById("join");
+        const joinForm = document.getElementById("joinForm");
+        const lobby = document.getElementById("lobby");
+        const userList = document.getElementById("userList");
+
+        join.addEventListener("click", () => {
+            const name = document.getElementById("name").value.trim();
+            const skills = document.getElementById("skills").value;
+            const knowSkill = document.getElementById("knowSkill").value.trim();
+
+            if(!skills || !name || !knowSkill ){
+                alert("Enter Full Details");
+                return;
+            }
+            socket.emit("join", {name,skills,knowSkill});
+            joinForm.style.display = "none";
+            lobby.style.display = "block";
+        });
+
+        socket.on("userList", (users) => {
+            userList.innerHTML = "";
+            users.forEach((user) => {
+                const li = document.createElement("li");
+                li.textContent = user.name +" "+ user.skills +" "+ user.knowSkill;
+                userList.appendChild(li);
+            });
+        });
+    </script>
+</body>
+</html>
