@@ -80,25 +80,27 @@ function formatTime(ms) {
 function renderUserList() {
     const now = Date.now();
 
-    // forget cooldowns that have finished
     for (const id in cooldowns) {
         if (cooldowns[id] <= now) delete cooldowns[id];
     }
 
     userList.innerHTML = "";
+    let shown = 0;
+
     lastUsers.forEach((user) => {
         if (user.id === socket.id) return;
+        shown++;
 
+        // CHANGED: each person is now a card
         const li = document.createElement("li");
-        li.textContent = user.name + " | wants to learn: " + user.skills + " | can teach: " + user.knowSkill;
+        li.className = "person-card";
 
+        // the button comes FIRST, before the name
         const btn = document.createElement("button");
-
         if (user.roomId) {
             btn.textContent = "In a room";
             btn.disabled = true;
         } else if (cooldowns[user.id]) {
-            // ADDED: rejected recently, show the countdown
             btn.textContent = "Try again in " + formatTime(cooldowns[user.id] - now);
             btn.disabled = true;
         } else if (pending[user.id]) {
@@ -113,9 +115,38 @@ function renderUserList() {
             });
         }
 
+        // name on top, skills underneath
+        const info = document.createElement("div");
+        info.className = "person-info";
+
+        const nameEl = document.createElement("div");
+        nameEl.className = "person-name";
+        nameEl.textContent = user.name;
+
+        const learnEl = document.createElement("div");
+        learnEl.className = "person-skill";
+        learnEl.textContent = "Wants to learn: " + user.skills;
+
+        const teachEl = document.createElement("div");
+        teachEl.className = "person-skill";
+        teachEl.textContent = "Can teach: " + user.knowSkill;
+
+        info.appendChild(nameEl);
+        info.appendChild(learnEl);
+        info.appendChild(teachEl);
+
         li.appendChild(btn);
+        li.appendChild(info);
         userList.appendChild(li);
     });
+
+    // ADDED: friendly message when nobody else is online
+    if (shown === 0) {
+        const empty = document.createElement("li");
+        empty.className = "empty";
+        empty.textContent = "No one else is online yet.";
+        userList.appendChild(empty);
+    }
 }
 
 // CHANGED: just saves the list and draws it

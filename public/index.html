@@ -8,6 +8,7 @@
 </head>
 <body>
     <div id="joinForm" class="container">
+        <h2>JOIN TO LEARN!!!!</h2>
         <input type="text" id="name" placeholder="NAME">
         <input type="text" id="skills" placeholder="Skills to learn">
         <input type="text" id="knowSkill" placeholder="Known Skills">
@@ -16,13 +17,24 @@
 
     <div id="lobby">
         <div id="requestBox"></div>
-        <h2>People Online</h2>
-        <ul id="userList"></ul>
 
-        <h2>General Chat</h2>
-        <div id="chatBox"></div>
-        <input type="text" id="chatInput" placeholder="Message">
-        <button id="send">Send</button>
+        <div class="container2">
+            <!-- LEFT: people list -->
+            <div class="people-panel">
+                <h2 id="onlineHead">People Online</h2>
+                <ul id="userList"></ul>
+            </div>
+
+            <!-- RIGHT: general chat -->
+            <div class="chat-panel">
+                <h2 id="chatHead">General Chat</h2>
+                <div id="chatBox"></div>
+                <div class="input-row">
+                    <input type="text" id="chatInput" placeholder="Message">
+                    <button id="send">Send</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="room">
@@ -37,7 +49,6 @@
 
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <!-- ADDED: your own JavaScript now lives in this file. It must come LAST -->
     <script src="/script.js"></script>
 </body>
 </html>

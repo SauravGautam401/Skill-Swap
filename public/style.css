@@ -1,26 +1,202 @@
-/* centers the join form on the screen */
-.container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; }
+/* ---------- page ---------- */
+body {
+    font-family: Arial, sans-serif;
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 16px;
+    background-color: bisque;
+}
 
-body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; padding: 0 16px; background-color: bisque; }
-input, button { display: block; width: 100%; padding: 8px; margin: 6px 0; box-sizing: border-box; border-radius: 10px; border-color: bisque; }
+input {
+    display: block;
+    width: 70%;
+    padding: 8px;
+    margin: 6px 0;
+    box-sizing: border-box;
+    border-radius: 30px;
+    border: 1px solid rgb(129, 73, 100);
+}
 
-/* hidden until the user joins / enters a room */
+button {
+    display: block;
+    width: 20%;
+    min-width: 80px;
+    padding: 8px;
+    margin: 6px 0;
+    box-sizing: border-box;
+    border-radius: 30px;
+    border: 1px solid rgb(159, 231, 219);
+    background-color: aquamarine;
+    cursor: pointer;
+}
+button:disabled { background-color: #ddd; border-color: #ccc; cursor: not-allowed; }
+
+/* ---------- join form ---------- */
+.container {
+    max-width: 500px;
+    margin: 15vh auto 0;
+    height: 50vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #000;
+    border-radius: 30px;
+    transition: .3s;
+    background-color: rgb(244, 219, 226);
+}
+.container:hover { box-shadow: 0 5px 15px rgba(220, 103, 103, 1); }
+
+/* ---------- hidden until needed ---------- */
 #lobby { display: none; }
 #room { display: none; }
 
-/* chat */
-#chatBox { height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; margin-bottom: 6px; }
-#chatBox p { margin: 4px 0; }
+/* ---------- lobby: two columns ---------- */
+.container2 {
+    display: flex;
+    gap: 20px;
+    height: 70vh;                 /* fixed height so each side scrolls on its own */
+    padding: 20px;
+    border: 1px solid #000;
+    border-radius: 30px;
+    background-color: rgb(241, 245, 246);
+    box-sizing: border-box;
+}
 
-/* people list and request buttons */
-li { margin: 8px 0; }
-li button { display: inline-block; width: auto; margin-left: 8px; }
+.people-panel,
+.chat-panel {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;                /* needed so the inside can scroll */
+    display: flex;
+    flex-direction: column;
+}
 
-/* incoming request popup */
-.request { border: 1px solid #333; padding: 8px; margin: 8px 0; }
-.request button { display: inline-block; width: auto; margin-right: 8px; }
+#onlineHead,
+#chatHead { margin: 0 0 12px; }
 
-/* video area */
-.videos { display: flex; gap: 8px; flex-wrap: wrap; }
-.videos video { width: 100%; background: #000; border-radius: 6px; }
-#localVideo { max-width: 160px; }
+/* ---------- LEFT: people list ---------- */
+#userList {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;             /* scrolls when there are many people */
+    list-style: none;
+    margin: 0;
+    padding: 0 6px 0 0;
+}
+
+.person-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 10px;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #e3d5d9;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .08);
+    transition: transform .2s, box-shadow .2s;
+}
+.person-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(220, 103, 103, .35);
+}
+.person-card button {
+    width: auto;
+    min-width: 90px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.person-info { min-width: 0; }
+.person-name { font-weight: bold; font-size: 16px; margin-bottom: 4px; }
+.person-skill { font-size: 13px; color: #555; margin: 2px 0; }
+
+.empty { color: #777; padding: 10px; }
+
+/* ---------- RIGHT: chat ---------- */
+#chatBox {
+    flex: 1;
+    min-height: 0;
+    margin: 0 0 8px;
+    padding: 8px;
+    border: 2px solid #110f0f;
+    border-radius: 30px;
+    overflow-y: auto;
+    background: #fff;
+    box-sizing: border-box;
+}
+#chatBox p { margin: 10px 12px; color: rgb(31, 30, 29); }
+
+.input-row { display: flex; align-items: center; gap: 10px; }
+
+#chatInput {
+    flex: 1;
+    width: auto;
+    margin: 0;
+    border: 2px solid #110f0f;
+}
+#send {
+    width: 80px;
+    min-width: 0;
+    margin: 0;
+    border: 2px solid #110f0f;
+}
+
+/* ---------- incoming request popup ---------- */
+.request {
+    border: 1px solid #333;
+    border-radius: 20px;
+    background: #fff;
+    padding: 10px 14px;
+    margin: 0 0 12px;
+}
+.request button {
+    display: inline-block;
+    width: auto;
+    margin-right: 8px;
+}
+
+/* ---------- video room ---------- */
+#room {
+    max-width: 800px;              /* keeps the whole room from stretching across the screen */
+    margin: 0 auto;
+}
+
+.videos {
+    position: relative;            /* lets your own small video sit on top of the big one */
+    background: #000;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+/* the other person: big, but never taller than 60% of the screen */
+#remoteVideo {
+    display: block;
+    width: 100%;
+    max-height: 60vh;
+    object-fit: contain;           /* shows the whole picture, so a shared screen isn't cropped */
+}
+
+/* you: small, in the bottom-right corner */
+#localVideo {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    width: 150px;
+    border: 2px solid #fff;
+    border-radius: 12px;
+    background: #222;
+}
+
+/* Share Screen and Leave Room side by side under the video */
+#room button {
+    display: inline-block;
+    margin: 10px 8px 0 0;
+}
+
+/* ---------- phones: stack the columns ---------- */
+@media (max-width: 700px) {
+    .container2 { flex-direction: column; height: auto; }
+    .people-panel, .chat-panel { height: 40vh; flex: none; }
+}
