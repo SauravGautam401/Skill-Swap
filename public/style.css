@@ -1,0 +1,26 @@
+/* centers the join form on the screen */
+.container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; }
+
+body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; padding: 0 16px; background-color: bisque; }
+input, button { display: block; width: 100%; padding: 8px; margin: 6px 0; box-sizing: border-box; border-radius: 10px; border-color: bisque; }
+
+/* hidden until the user joins / enters a room */
+#lobby { display: none; }
+#room { display: none; }
+
+/* chat */
+#chatBox { height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; margin-bottom: 6px; }
+#chatBox p { margin: 4px 0; }
+
+/* people list and request buttons */
+li { margin: 8px 0; }
+li button { display: inline-block; width: auto; margin-left: 8px; }
+
+/* incoming request popup */
+.request { border: 1px solid #333; padding: 8px; margin: 8px 0; }
+.request button { display: inline-block; width: auto; margin-right: 8px; }
+
+/* video area */
+.videos { display: flex; gap: 8px; flex-wrap: wrap; }
+.videos video { width: 100%; background: #000; border-radius: 6px; }
+#localVideo { max-width: 160px; }

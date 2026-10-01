@@ -4,24 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HOME</title>
-     <style>
-        body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; padding: 0 16px; }
-        input, button { display: block; width: 100%; padding: 8px; margin: 6px 0; box-sizing: border-box; }
-        #lobby { display: none; }
-        #chatBox { height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; margin-bottom: 6px; }
-        #chatBox p { margin: 4px 0; }
-        #room { display: none; }
-        li { margin: 8px 0; }
-        li button { display: inline-block; width: auto; margin-left: 8px; }
-        .request { border: 1px solid #333; padding: 8px; margin: 8px 0; }
-        .request button { display: inline-block; width: auto; margin-right: 8px; }
-        .videos { display: flex; gap: 8px; flex-wrap: wrap; }
-        .videos video { width: 100%; background: #000; border-radius: 6px; }
-        #localVideo { max-width: 160px; }
-    </style>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div id="joinForm">
+    <div id="joinForm" class="container">
         <input type="text" id="name" placeholder="NAME">
         <input type="text" id="skills" placeholder="Skills to learn">
         <input type="text" id="knowSkill" placeholder="Known Skills">
