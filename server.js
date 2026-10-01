@@ -11,6 +11,13 @@ app.use(express.static("public"));
 
 const users = {};
 
+// ADDED: how long a person must wait after being rejected (5 minutes)
+const COOLDOWN_MS = 10 * 1000;
+
+// ADDED: remembers who is blocked from requesting whom
+// key = "requesterId:targetId", value = time when they can request again
+const cooldowns = {};
+
 function sendUserList() {
     io.emit("userList",Object.values(users));
 }
@@ -63,8 +70,16 @@ io.on("connection", (socket) => {
         const target = users[targetId];
         if(!me || !target || targetId === socket.id) return;
 
+        // ADDED: if this person was rejected recently, don't send the request
+        const key = socket.id + ":" + targetId;
+        if (cooldowns[key] && cooldowns[key] > Date.now()) {
+            socket.emit("requestCooldown", { id: targetId, remainingMs: cooldowns[key] - Date.now() });
+            return;
+        }
+
         if(me.roomId || target.roomId){
-            socket.emit("requestFailed", {name:target.name});
+            // CHANGED: also sends the id, so the browser can reset that button
+            socket.emit("requestFailed", { name: target.name, id: targetId });
             return;
         }
         io.to(targetId).emit("incomingRequest", {
@@ -81,7 +96,11 @@ io.on("connection", (socket) => {
         if(!me || !other) return;
 
         if(!accepted){
-            io.to(fromId).emit("requestRejected", {name: me.name});
+            // ADDED: start the 5 minute cooldown for this pair
+            cooldowns[fromId + ":" + socket.id] = Date.now() + COOLDOWN_MS;
+
+            // CHANGED: now also sends who rejected (id) and how long the wait is
+            io.to(fromId).emit("requestRejected", { name: me.name, id: socket.id, remainingMs: COOLDOWN_MS });
             return;
         }
         if(me.roomId ||other.roomId) return;
@@ -90,8 +109,8 @@ io.on("connection", (socket) => {
         me.roomId = roomId;
         other.roomId = roomId;
 
-        io.to(fromId).emit("roomReady",{ roomId, partnerName: me.name});
-        socket.emit("roomReady",{roomId, partnerName: other.name});
+        io.to(fromId).emit("roomReady",{ roomId, partnerName: me.name, partnerId: socket.id, isCaller: true });
+        socket.emit("roomReady",{ roomId, partnerName: other.name, partnerId: fromId, isCaller: false });
         sendUserList();
     });
 
@@ -102,6 +121,12 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
         console.log("A user left:", socket.id);
         leaveRoom(socket.id);
+
+        // ADDED: clean up cooldown records that involve this person
+        for (const key in cooldowns) {
+            if (key.includes(socket.id)) delete cooldowns[key];
+        }
+
         delete users[socket.id];
         sendUserList();
     });
@@ -111,4 +136,3 @@ const PORT = 3000;
 server.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
 });
-

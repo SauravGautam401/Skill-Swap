@@ -8,7 +8,6 @@
         body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; padding: 0 16px; }
         input, button { display: block; width: 100%; padding: 8px; margin: 6px 0; box-sizing: border-box; }
         #lobby { display: none; }
-        #chatMessage { display: none; }
         #chatBox { height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; margin-bottom: 6px; }
         #chatBox p { margin: 4px 0; }
         #room { display: none; }
@@ -16,15 +15,19 @@
         li button { display: inline-block; width: auto; margin-left: 8px; }
         .request { border: 1px solid #333; padding: 8px; margin: 8px 0; }
         .request button { display: inline-block; width: auto; margin-right: 8px; }
+        .videos { display: flex; gap: 8px; flex-wrap: wrap; }
+        .videos video { width: 100%; background: #000; border-radius: 6px; }
+        #localVideo { max-width: 160px; }
     </style>
 </head>
 <body>
-    <div id = "joinForm">
+    <div id="joinForm">
         <input type="text" id="name" placeholder="NAME">
         <input type="text" id="skills" placeholder="Skills to learn">
         <input type="text" id="knowSkill" placeholder="Known Skills">
         <button id="join">JOIN</button>
     </div>
+
     <div id="lobby">
         <div id="requestBox"></div>
         <h2>People Online</h2>
@@ -34,146 +37,21 @@
         <div id="chatBox"></div>
         <input type="text" id="chatInput" placeholder="Message">
         <button id="send">Send</button>
-
     </div>
 
     <div id="room">
-    <h2 id="roomTitle"></h2>
-    <p>Video call coming in the next step.</p>
-    <button id="leaveBtn">Leave Room</button>
+        <h2 id="roomTitle"></h2>
+        <div class="videos">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <video id="localVideo" autoplay playsinline muted></video>
+        </div>
+        <button id="shareBtn">Share Screen</button>
+        <button id="leaveBtn">Leave Room</button>
     </div>
-    
 
-
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-
-        const join = document.getElementById("join");
-        const joinForm = document.getElementById("joinForm");
-        const lobby = document.getElementById("lobby");
-        const userList = document.getElementById("userList");
-
-        const chatBox = document.getElementById("chatBox");
-        const chatInput = document.getElementById("chatInput");
-        const send = document.getElementById("send");
-
-        const requestBox = document.getElementById("requestBox");
-        const room = document.getElementById("room");
-        const roomTitle = document.getElementById("roomTitle");
-        const leaveBtn = document.getElementById("leaveBtn");
-
-        function sendMessage(){
-            const text = chatInput.value.trim();
-            if(!text) return;
-            socket.emit("chatMessage", text);
-            chatInput.value="";
-        }
-
-        send.addEventListener("click", sendMessage);
-        chatInput.addEventListener("keydown", (e) => {
-            if(e.key === "Enter") sendMessage();
-        });
-
-        socket.on("chatMessage", (msg) => {
-            const p = document.createElement("p");
-            p.textContent = "[" +msg.time+ "] " +msg.name + ": "+ msg.text;
-            chatBox.appendChild(p);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
-
-        join.addEventListener("click", () => {
-            const name = document.getElementById("name").value.trim();
-            const skills = document.getElementById("skills").value.trim();
-            const knowSkill = document.getElementById("knowSkill").value.trim();
-
-            if(!skills || !name || !knowSkill ){
-                alert("Enter Full Details");
-                return;
-            }
-            socket.emit("join", {name,skills,knowSkill});
-            joinForm.style.display = "none";
-            lobby.style.display = "block";
-        });
-
-        socket.on("userList", (users) => {
-            userList.innerHTML = "";
-            users.forEach((user) => {
-                if (user.id === socket.id) return;
-                const li = document.createElement("li");
-                li.textContent = user.name + " | wants to learn: " + user.skills + " | can teach: " + user.knowSkill;
-
-                const btn = document.createElement("button");
-                if (user.roomId) {
-                    btn.textContent = "In a room";
-                    btn.disabled = true;
-                } else {
-                    btn.textContent = "Request";
-                    btn.addEventListener("click", () => {
-                        socket.emit("requestSwap", user.id);
-                        btn.textContent = "Requested";
-                        btn.disabled = true;
-                    });
-                }
-                
-                li.appendChild(btn);
-                userList.appendChild(li);
-            });
-        });
-
-        socket.on("incomingRequest", (req) => {
-        const div = document.createElement("div");
-        div.className = "request";
-
-        const p = document.createElement("p");
-        p.textContent = req.name + " wants to connect. They can teach " + req.teaches + " and want to learn " + req.wants + ".";
-
-        const acceptBtn = document.createElement("button");
-        acceptBtn.textContent = "Accept";
-        acceptBtn.addEventListener("click", () => {
-            socket.emit("respondRequest", { fromId: req.fromId, accepted: true });
-            div.remove();
-        });
-
-        const rejectBtn = document.createElement("button");
-        rejectBtn.textContent = "Reject";
-        rejectBtn.addEventListener("click", () => {
-            socket.emit("respondRequest", { fromId: req.fromId, accepted: false });
-            div.remove();
-        });
-
-        div.appendChild(p);
-        div.appendChild(acceptBtn);
-        div.appendChild(rejectBtn);
-        requestBox.appendChild(div);
-    });
-
-    socket.on("requestRejected", (data) => {
-        alert(data.name + " declined your request.");
-    });
-
-    socket.on("requestFailed", (data) => {
-        alert(data.name + " is busy in another room right now.");
-    });
-
-    socket.on("roomReady", (data) => {
-        lobby.style.display = "none";
-        room.style.display = "block";
-        requestBox.innerHTML = "";
-        roomTitle.textContent = "Room with " + data.partnerName;
-    });
-
-    socket.on("partnerLeft", () => {
-        alert("Your partner left the room.");
-        room.style.display = "none";
-        lobby.style.display = "block";
-    });
-
-    leaveBtn.addEventListener("click", () => {
-        socket.emit("leaveRoom");
-        room.style.display = "none";
-        lobby.style.display = "block";
-    });
-    </script>
+    <!-- ADDED: your own JavaScript now lives in this file. It must come LAST -->
+    <script src="/script.js"></script>
 </body>
 </html>
